@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8"/>
+    <title>Список заказов</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+</head>
+
+<style>
+    .status-in-process {
+        color: red;
+    }
+
+    .status-completed {
+        color: green;
+    }
+</style>
+
+<body>
+<div th:replace="navigation :: navi('Home')"></div>
+<div style="margin-left: 50px;margin-right: 50px">
+    <table class="table table-hover" style = "font-size: 17px">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Статус заказа</th>
+            <th>Дата заказа</th>
+            <th>Цена</th>
+            <th sec:authorize="isAuthenticated()">Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="order : ${orders}">
+            <td th:text="${order.id}"/>
+            <td th:text="${order.getOrder_status()}" th:class="${order.getStatusClass()}"/>
+            <td th:text="${order.getOrder_date()}"/>
+            <td th:text="${order.getTotal_cost()}"></td>
+            <td sec:authorize="isAuthenticated()">
+                <a th:href="@{'/orders/show/' + ${order.id}}"  th:text="Просмотреть" class="text-info"
+                   style="margin-right: 50px"/>
+                <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                   th:href="@{'/orders/addOrUpdate/edit/' + ${order.id}}" th:text="Редактировать" class="text-info"
+                   style="margin-right: 50px"/>
+                <a th:if="${#authorization.expression('hasRole(''ADMIN'')')}"
+                   th:href="@{'/orders/delete/' + ${order.id}}" th:text="Удалить" class="text-danger"
+                   style="margin-right: 50px"/>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <nav aria-label="Page navigation" th:if="${totalPages > 0}">
+        <ul class="pagination">
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                <a class="page-link" th:href="@{${filterUrl}(page=${i})}" th:text="${i + 1}"></a>
+            </li>
+        </ul>
+    </nav>
+    <br>
+
+    <h3 style="margin-bottom: 25px" class="text-center" >Фильтры</h3>
+    <form th:action="@{/orders/filter}" method="get">
+        <div class="form-group">
+            <input type="text" class="form-control" id="order_status" name="order_status" placeholder="Статус заказа" th:value="${order_status}">
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" id="order_date" name="order_date" placeholder="Дата заказа" th:value="${order_date}">
+        </div>
+        <div class="form-group">
+            <input type="number" min="0"  step="any" class="form-control" id="total_cost" name="total_cost" placeholder="Цена заказа меньше чем ..." th:value="${total_cost}">
+        </div>
+        <button class="btn btn-black" sec:authorize="isAnonymous()" disabled>Применить</button>
+        <button type="submit" class="btn btn-success" sec:authorize="isAuthenticated()">Применить</button>
+
+    </form>
+    <form th:action="@{/}" class ="text-right">
+        <button style='margin-top: -70px' sec:authorize="isAnonymous()" disabled class="btn btn-black">Сброс</button>
+        <button style='margin-top: -70px' type="submit" class="btn btn-danger" sec:authorize="isAuthenticated()">Сброс</button>
+    </form>
+    <br>
+    <h3 class = "text-center">В какие дни пришло больше всего клиентов</h3>
+    <br>
+
+    <ul sec:authorize="isAnonymous()" th:if="${mostCommonOrderDate != null && mostCommonOrderDate.size() > 0}"
+        style="list-style-type: none; padding: 0; margin: 0; margin-top: -20px; font-size: 20px"
+        class = "text-center">
+        <h6 class = "text-danger">Для просмотра необходимо авторизоваться</h6>
+    </ul>
+
+    <ul sec:authorize="isAuthenticated()" th:if="${mostCommonOrderDate != null && mostCommonOrderDate.size() > 0}"
+        style="list-style-type: none; padding: 0; margin: 0; margin-top: -20px; font-size: 20px"
+        class = "text-center">
+        <li th:each="orderDate, i : ${mostCommonOrderDate}"
+            th:text="${#strings.concat(#strings.concat((i.index + 1), ' - '), orderDate)}"></li>
+    </ul>
+</div>
+<div style="height: 50px;"></div>
+</body>
+</html>
