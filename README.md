@@ -24,6 +24,6 @@ Laboratory Work No.12 - Hibernate. Part 2.
 
 Laboratory Work No.13 - Spring Core.
 
-Laboratory Work No.14 - Spring Initializer.
+Laboratory Work No.14 - Spring Boot. Thymeleaf. Spring Security.
 
 Laboratory Work No.15 - Spring Data.
